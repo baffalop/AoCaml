@@ -1,0 +1,6 @@
+(executable
+ (name gen)
+ (modules gen)
+ (libraries fmt))
+
+(include_subdirs no)
