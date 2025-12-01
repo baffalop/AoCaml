@@ -11,4 +11,4 @@
 
 (library
  (name problems)
- (libraries problem import))
+ (libraries problem import angstrom))

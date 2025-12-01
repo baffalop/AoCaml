@@ -1,7 +1,7 @@
 (library
  (name aoc)
  (modules drivers problem_runner)
- (libraries cmdliner problems import))
+ (libraries cmdliner problems import angstrom))
 
 (library
  (name import)
