@@ -3,6 +3,8 @@ let day = 1
 
 type turns = int list
 
+open Import
+
 let (%) x y =
   let r = x mod y in
   if r < 0 then r + y else r
@@ -46,8 +48,8 @@ end = struct
     Parse.parse input
     |> Result.map (solve_with (fun ~state ~turn ->
       if (state + turn) % 100 = 0 then 1 else 0
-    ))
-    |> Result.map string_of_int
+    )
+    >> string_of_int)
 end
 
 module Part_2 = struct
@@ -56,6 +58,6 @@ module Part_2 = struct
     |> Result.map (solve_with (fun ~state ~turn ->
       let sum = state + turn in
       abs (sum / 100) + if sum <= 0 && state <> 0 then 1 else 0
-    ))
-    |> Result.map string_of_int
+    )
+    >> string_of_int)
 end
