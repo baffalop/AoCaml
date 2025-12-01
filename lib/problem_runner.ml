@@ -43,7 +43,8 @@ module Run_mode = struct
     if Sys.file_exists filename then Ok (read_file filename)
       (* If not, fetch it from adventofcode.com *)
     else
-      match credentials with
+      failwith "Cannot fetch input: Piaf not installed"
+      (* match credentials with
       | None ->
           Error "Cannot fetch input from adventofcode.com: missing credentials."
       | Some credentials ->
@@ -67,7 +68,7 @@ module Run_mode = struct
           let@ response = Piaf.Client.Oneshot.get ~sw env ~headers uri in
           let@ body = Piaf.Body.to_string response.body in
           write_file filename body;
-          Result.ok body
+          Result.ok body *)
 
   let get_input (year : int) (day : int) : t -> (string, string) result =
     function
@@ -80,7 +81,8 @@ module Run_mode = struct
     match run_mode with
     | Test_from_puzzle_input _ -> Ok None
     | Submit { credentials } ->
-        Result.map_error Piaf.Error.to_string
+        failwith "Cleanup: Piaf not installed"
+        (* Result.map_error Piaf.Error.to_string
         @@ Eio_main.run
         @@ fun env ->
         Eio.Switch.run
@@ -105,7 +107,7 @@ module Run_mode = struct
         in
         let@ response = Piaf.Client.Oneshot.post ~sw env ~headers ~body uri in
         let@ body = Piaf.Body.to_string response.body in
-        Result.ok (Some body)
+        Result.ok (Some body) *)
 end
 
 module Options = struct
