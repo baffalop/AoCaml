@@ -6,8 +6,8 @@
 (library
  (name import)
  (wrapped false)
- (modules import let fn)
- (libraries fmt eio_main))
+ (modules import let fn parser)
+ (libraries fmt eio_main angstrom))
 
 (library
  (name problem)

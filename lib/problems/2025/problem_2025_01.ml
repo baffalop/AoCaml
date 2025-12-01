@@ -20,16 +20,12 @@ module Parse : sig
 end = struct
   open Angstrom
 
-  let u_dec : int t =
-    let* digits = take_while1 (function '0'..'9' -> true | _ -> false) in
-    return @@ int_of_string digits
-
   let turn : int t =
     let* dir = choice [
       char 'L' *> return (-1);
       char 'R' *> return 1;
     ] in
-    let* n = u_dec in
+    let* n = Parser.u_dec in
     return (dir * n)
 
   let turns : turns t = sep_by1 (char '\n') turn
