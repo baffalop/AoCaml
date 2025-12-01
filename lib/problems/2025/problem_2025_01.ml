@@ -58,8 +58,8 @@ module Part_2 = struct
   let run (input : string) : (string, string) result =
     Parse.parse input
     |> Result.map (solve_with (fun ~state ~turn ->
-      let accum = state + turn in
-      abs (accum / 100) + if accum <= 0 && state <> 0 then 1 else 0
+      let sum = state + turn in
+      abs (sum / 100) + if sum <= 0 && state <> 0 then 1 else 0
     ))
     |> Result.map string_of_int
 end
