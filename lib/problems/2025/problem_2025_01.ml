@@ -7,10 +7,11 @@ let (%) x y =
   let r = x mod y in
   if r < 0 then r + y else r
 
-let solve_with (count_zeroes : int -> int -> int) (turns : turns) : int =
+let solve_with (count_zeroes : state:int -> turn:int -> int) (turns : turns) : int =
   List.fold_left (fun (state, zeroes) turn ->
     let state' = (state + turn) % 100 in
-    ( state', zeroes + count_zeroes state turn)
+    let added_zeroes = count_zeroes ~state ~turn in
+    ( state', zeroes + added_zeroes )
   ) (50, 0) turns
   |> snd
 
@@ -47,13 +48,18 @@ module Part_1 : sig
 end = struct
   let run (input : string) : (string, string) result =
     Parse.parse input
-    |> Result.map (solve_with (fun state turn -> if (state + turn) % 100 = 0 then 1 else 0))
+    |> Result.map (solve_with (fun ~state ~turn ->
+      if (state + turn) % 100 = 0 then 1 else 0
+    ))
     |> Result.map string_of_int
 end
 
 module Part_2 = struct
   let run (input : string) : (string, string) result =
     Parse.parse input
-    |> Result.map (solve_with (fun state turn -> failwith "oops"))
+    |> Result.map (solve_with (fun ~state ~turn ->
+      let accum = state + turn in
+      abs (accum / 100) + if accum <= 0 && state <> 0 then 1 else 0
+    ))
     |> Result.map string_of_int
 end
