@@ -1,24 +1,24 @@
 (lang dune 3.7)
 
-(name tanenbaum)
+(name aoc)
 (version 0.1.0)
 
 (generate_opam_files true)
 
 (source
- (github sixstring982/tanenbaum))
+ (github baffalop/aocaml))
 
-(authors "Sixstring982")
+(authors "Sixstring982", "Baffalop")
 
-(maintainers "Sixstring982")
+(maintainers "Sixstring982" "Baffalop")
 
 (license BSD-3-Clause)
 
 (documentation https://sixstring982.github.io/tanenbaum)
 
 (package
- (name tanenbaum)
- (synopsis "OCaml Advent of Code starter project")
+ (name aoc)
+ (synopsis "Advent of Code solutions in OCaml, using Tanenbaum starter pack")
  (depends
   ocaml
   reason
