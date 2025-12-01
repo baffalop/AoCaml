@@ -34,9 +34,18 @@ end
 module Part_1 : sig
   val run : string -> (string, string) result
 end = struct
+  let (%) x y =
+    let r = x mod y in
+    if r < 0 then r + y else r
+
   let run (input : string) : (string, string) result =
     Parse.parse input |> Result.map (fun parsed ->
-      String.concat ", " @@ List.map string_of_int parsed
+      List.fold_left (fun (state, zeroes) turn ->
+        let state' = (state + turn) % 100 in
+        ( state', zeroes + if state' = 0 then 1 else 0 )
+      ) (50, 0) parsed
+      |> snd
+      |> string_of_int
     )
 end
 
