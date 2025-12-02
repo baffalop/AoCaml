@@ -22,12 +22,6 @@ end = struct
     parse_string ~consume:Prefix @@ sep_by1 (char '\n') turn
 end
 
-module Print : sig
-  val print : turns -> string
-end = struct
-  let print (turns : turns) : string = String.concat ", " @@ List.map string_of_int turns
-end
-
 let (%) x y =
   let r = x mod y in
   if r < 0 then r + y else r
