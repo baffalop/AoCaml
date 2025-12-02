@@ -15,24 +15,57 @@ module Parse : sig
   val parse : string -> (Range.t list, string) result
 end = struct
   open Angstrom
-  open Parser
 
   let range : Range.t t =
-    let* a = u_dec <* char '-' in
-    let* b = u_dec in
+    let* a = Parser.u_dec <* char '-' in
+    let* b = Parser.u_dec in
     return (a, b)
 
   let parse : string -> (Range.t list, string) result =
     parse_string ~consume:Prefix @@ sep_by1 (char ',') range
 end
 
-module Part_1 : sig
+let int_len (n : int) : int =
+  int_of_float (log10 @@ float_of_int n) + 1
+
+let half (n : int) : int =
+  let len = int_len n in
+  let half_len = float_of_int @@ len / 2 in
+  let exp = int_of_float @@ 10. ** half_len in
+  n / exp
+
+let double (n : int) : int =
+  let len = int_len n in
+  let exp = int_of_float @@ 10. ** float_of_int len in
+  n * exp + n
+
+module Solution(Part : sig
+  val invalids : Range.t -> int list
+end) : sig
   val run : string -> (string, string) result
 end = struct
-  let run (input : string) : (string, string) result =
-    let@ parsed = Parse.parse input in
-    Ok (Range.show_list parsed)
+  let run =
+    Parse.parse
+    >> Result.map (List.concat_map Part.invalids
+      >> List.fold_left (+) 0
+      >> string_of_int)
 end
+
+module Part_1 = Solution(struct
+  let invalids ((a, b) : Range.t) : int list =
+    let half_b = half b in
+    let first_half = ref @@ half a in
+    let invalids = ref [] in
+
+    while !first_half <= half_b do
+      let candidate = double !first_half in
+      if candidate >= a && candidate <= b then
+        invalids := candidate :: !invalids;
+      incr first_half;
+    done;
+
+    !invalids
+end)
 
 module Part_2 : sig
   val run : string -> (string, string) result
