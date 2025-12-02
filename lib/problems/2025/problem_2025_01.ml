@@ -30,9 +30,8 @@ end = struct
     let* n = Parser.u_dec in
     return (dir * n)
 
-  let turns : turns t = sep_by1 (char '\n') turn
-
-  let parse (input : string) : (turns, string) result = parse_string ~consume:Prefix turns input
+  let parse : string -> (turns, string) result =
+    parse_string ~consume:Prefix @@ sep_by1 (char '\n') turn
 end
 
 module Print : sig
