@@ -28,9 +28,15 @@ end
 let int_len (n : int) : int =
   int_of_float (log10 @@ float_of_int n) + 1
 
-let half (n : int) : int =
-  let len = int_len n in
-  let half_len = float_of_int @@ len / 2 in
+let half_fl (n : int) : int =
+  let len = float_of_int @@ int_len n in
+  let half_len = ceil @@ len /. 2. in
+  let exp = int_of_float @@ 10. ** half_len in
+  n / exp
+
+let half_ceil (n : int) : int =
+  let len = float_of_int @@ int_len n in
+  let half_len = floor @@ len /. 2. in
   let exp = int_of_float @@ 10. ** half_len in
   n / exp
 
@@ -53,8 +59,8 @@ end
 
 module Part_1 = Solution(struct
   let invalids ((a, b) : Range.t) : int list =
-    let half_b = half b in
-    let first_half = ref @@ half a in
+    let half_b = half_ceil b in
+    let first_half = ref @@ half_fl a in
     let invalids = ref [] in
 
     while !first_half <= half_b do
