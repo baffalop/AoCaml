@@ -80,7 +80,7 @@ end)
 
 module Part_2 = Solution(struct
   let invalids (a, b : Range.t) : int list =
-    let max_size = (digits a) / 2 in
-    List.init (max_size - 1) (fun i -> (failwith "todo") (i + 1) (a, b))
+    let max_size = (digits b + 1) / 2 in
+    List.init max_size (fun i -> patterns_of (i + 1) (a, b))
     |> List.flatten
 end)
