@@ -54,7 +54,7 @@ let cycle (n : int) (f : 'a -> 'a) : 'a -> 'a =
 
 let reduplicate (times : int) (n : int) : int =
   let exp = pow10 @@ digits n in
-  cycle (times - 1) (fun x -> x * exp + x) n
+  cycle (times - 1) (fun x -> x * exp + n) n
 
 let patterns_of (size : int) ((a, b) : Range.t) : int list =
   let max_prefix = take_digits size b in
