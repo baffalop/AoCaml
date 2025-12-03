@@ -27,15 +27,15 @@ end = struct
 end
 
 module Part_1 = Solution(struct
-  let find_max : jbank -> (int * int) =
+  let max_digit : jbank -> (int * int) =
     List.fold_left (fun (i, (res_i, res)) d ->
       (i + 1, if d > res then (i, d) else (res_i, res))
     ) (0, (0, 0))
     >> snd
 
   let max_joltage (bank : jbank) : int =
-    let (i, fst_digit) = find_max @@ List.take (max 1 @@ List.length bank - 1) bank in
-    let (_, snd_digit) = find_max @@ List.drop (i + 1) bank in
+    let (i, fst_digit) = max_digit @@ List.take (max 1 @@ List.length bank - 1) bank in
+    let (_, snd_digit) = max_digit @@ List.drop (i + 1) bank in
     fst_digit * 10 + snd_digit
 end)
 
