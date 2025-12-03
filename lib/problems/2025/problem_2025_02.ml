@@ -25,13 +25,23 @@ end = struct
     parse_string ~consume:Prefix @@ sep_by1 (char ',') range
 end
 
+module Solution(Part : sig
+  val invalids : Range.t -> int list
+end) : sig
+  val run : string -> (string, string) result
+end = struct
+  let run =
+    Parse.parse
+    >> Result.map (List.concat_map Part.invalids
+      >> List.fold_left (+) 0
+      >> string_of_int)
+end
+
 let digits (n : int) : int =
   int_of_float (log10 @@ float_of_int n) + 1
 
 let pow10 (n : int) : int =
   int_of_float @@ 10. ** float_of_int n
-
-let half_ceil (n : int) : int = (n + 1) / 2
 
 let take_digits (d : int) (x : int) : int =
   x / (pow10 @@ max 0 @@ digits x - d)
@@ -45,18 +55,6 @@ let cycle (n : int) (f : 'a -> 'a) : 'a -> 'a =
 let reduplicate (times : int) (n : int) : int =
   let exp = pow10 @@ digits n in
   cycle (times - 1) (fun x -> x * exp + x) n
-
-module Solution(Part : sig
-  val invalids : Range.t -> int list
-end) : sig
-  val run : string -> (string, string) result
-end = struct
-  let run =
-    Parse.parse
-    >> Result.map (List.concat_map Part.invalids
-      >> List.fold_left (+) 0
-      >> string_of_int)
-end
 
 let patterns_of (size : int) ((a, b) : Range.t) : int list =
   let max_prefix = take_digits size b in
