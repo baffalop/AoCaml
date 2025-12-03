@@ -25,25 +25,26 @@ end = struct
     parse_string ~consume:Prefix @@ sep_by1 (char ',') range
 end
 
-let int_len (n : int) : int =
+let digits (n : int) : int =
   int_of_float (log10 @@ float_of_int n) + 1
 
-let half_fl (n : int) : int =
-  let len = float_of_int @@ int_len n in
-  let half_len = ceil @@ len /. 2. in
-  let exp = int_of_float @@ 10. ** half_len in
-  n / exp
+let pow10 (n : int) : int =
+  int_of_float @@ 10. ** float_of_int n
 
-let half_ceil (n : int) : int =
-  let len = float_of_int @@ int_len n in
-  let half_len = floor @@ len /. 2. in
-  let exp = int_of_float @@ 10. ** half_len in
-  n / exp
+let half_ceil (n : int) : int = (n + 1) / 2
 
-let double (n : int) : int =
-  let len = int_len n in
-  let exp = int_of_float @@ 10. ** float_of_int len in
-  n * exp + n
+let take_digits (d : int) (x : int) : int =
+  x / (pow10 @@ max 0 @@ digits x - d)
+
+let cycle (n : int) (f : 'a -> 'a) : 'a -> 'a =
+  let rec cycle' n x =
+    if n = 0 then x else cycle' (n - 1) (f x)
+  in
+  cycle' n
+
+let reduplicate (times : int) (n : int) : int =
+  let exp = pow10 @@ digits n in
+  cycle (times - 1) (fun x -> x * exp + x) n
 
 module Solution(Part : sig
   val invalids : Range.t -> int list
@@ -59,22 +60,25 @@ end
 
 module Part_1 = Solution(struct
   let invalids ((a, b) : Range.t) : int list =
-    let half_b = half_ceil b in
-    let first_half = ref @@ half_fl a in
+    let max_prefix = take_digits (half_ceil @@ digits b) b in
+    let prefix = ref @@ take_digits (digits a / 2) a in
     let invalids = ref [] in
 
-    while !first_half <= half_b do
-      let candidate = double !first_half in
+    Printf.printf "RANGE (%d, %d) max_prefix: %d\n" a b max_prefix;
+
+    while !prefix <= max_prefix do
+      let candidate = reduplicate 2 !prefix in
       if candidate >= a && candidate <= b then
         invalids := candidate :: !invalids;
-      incr first_half;
+      incr prefix;
     done;
 
     !invalids
 end)
 
-module Part_2 : sig
-  val run : string -> (string, string) result
-end = struct
-  let run (input : string) : (string, string) result = failwith "not implemented"
-end
+module Part_2 = Solution(struct
+  let invalids (a, b : Range.t) : int list =
+    let max_size = (digits a) / 2 in
+    List.init (max_size - 1) (fun i -> (failwith "todo") (i + 1) (a, b))
+    |> List.flatten
+end)
