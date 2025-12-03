@@ -58,22 +58,24 @@ end = struct
       >> string_of_int)
 end
 
+let patterns_of (size : int) ((a, b) : Range.t) : int list =
+  let max_prefix = take_digits size b in
+  let chunks = (digits a) / (max 1 size) in
+  let prefix = ref @@ take_digits size a in
+  let invalids = ref [] in
+
+  while !prefix <= max_prefix do
+    let candidate = reduplicate chunks !prefix in
+    if candidate >= a && candidate <= b then
+      invalids := candidate :: !invalids;
+    incr prefix;
+  done;
+
+  !invalids
+
 module Part_1 = Solution(struct
-  let invalids ((a, b) : Range.t) : int list =
-    let max_prefix = take_digits (half_ceil @@ digits b) b in
-    let prefix = ref @@ take_digits (digits a / 2) a in
-    let invalids = ref [] in
-
-    Printf.printf "RANGE (%d, %d) max_prefix: %d\n" a b max_prefix;
-
-    while !prefix <= max_prefix do
-      let candidate = reduplicate 2 !prefix in
-      if candidate >= a && candidate <= b then
-        invalids := candidate :: !invalids;
-      incr prefix;
-    done;
-
-    !invalids
+  let invalids (a, b : Range.t) : int list =
+    patterns_of (digits a / 2) (a, b)
 end)
 
 module Part_2 = Solution(struct
