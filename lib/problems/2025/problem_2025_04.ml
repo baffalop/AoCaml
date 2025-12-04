@@ -27,6 +27,10 @@ let neighbours (x, y) : coord list =
     x + 1, y + 1;
   ]
 
+let accessible (coord : coord) ~map:(map : map) : bool =
+  let adjacents = neighbours coord |> List.filter (flip GridMap.mem map) in
+  List.length adjacents < 4
+
 module Solution(Part : sig
   val solve : map -> int
 end) : sig
@@ -38,15 +42,18 @@ end
 module Part_1 = Solution(struct
   let solve (map : map) : int =
     GridMap.fold (fun coord _ total ->
-      let adjacent_rolls =
-        neighbours coord
-        |> List.filter (flip GridMap.mem map)
-        |> List.length
-      in
-      total + if adjacent_rolls < 4 then 1 else 0
+      total + if accessible coord ~map then 1 else 0
     ) map 0
 end)
 
 module Part_2 = Solution(struct
-  let solve _ = failwith "todo"
+  let remove_accessible (map : map) : map =
+    GridMap.filter (fun coord _ -> not @@ accessible coord ~map) map
+
+  let solve (map : map) : int =
+    let rec reduce (map : map) : map =
+      let reduced = remove_accessible map in
+      if reduced = map then map else reduce reduced
+    in
+    GridMap.cardinal map - GridMap.cardinal (reduce map)
 end)
