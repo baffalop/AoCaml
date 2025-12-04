@@ -1,11 +1,17 @@
 open Import
 
-module Credentials = struct
-  type t = string
+type headers = (string * string) list
 
-  let of_auth_token (x : string) : t = x
+module Credentials: sig
+  type t
+  val of_auth_token : string -> t
+  val to_headers : t -> headers
+end = struct
+  type t = Token of string
 
-  let to_headers (t : t) : (string * string) list =
+  let of_auth_token (x : string) : t = Token x
+
+  let to_headers (Token t : t) : headers =
     [ ("Cookie", "session=" ^ t) ]
 end
 
@@ -28,18 +34,12 @@ module Run_mode = struct
   let get_puzzle_input (year : int) (day : int)
       (credentials : Credentials.t option) : (string, string) result =
     (* Create cache directory structure *)
-    let () =
-      if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777 else ()
-    in
+    if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777;
     let year_dir = Filename.concat "inputs" @@ string_of_int year in
-    let () =
-      if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777 else ()
-    in
+    if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777;
 
     (* Check if cached input exists *)
-    let filename =
-      Filename.concat year_dir @@ Format.sprintf "%02d.txt" day
-    in
+    let filename = Filename.concat year_dir @@ Format.sprintf "%02d.txt" day in
     if Sys.file_exists filename then Ok (read_file filename)
     else
       let () = print_endline "Input not cached: fetching from adventofcode.com..." in
