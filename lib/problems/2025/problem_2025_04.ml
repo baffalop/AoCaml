@@ -4,11 +4,11 @@ let day = 4
 open Import
 open Grid
 
-type map = [`R] GridMap.t
+type map = [`Roll] GridMap.t
 
 let parse : string -> map =
   grid_of @@ function
-    | '@' -> Some `R
+    | '@' -> Some `Roll
     | _ -> None
 
 let show (map : map) : string =
