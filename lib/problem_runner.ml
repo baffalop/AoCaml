@@ -41,8 +41,8 @@ module Run_mode = struct
       Filename.concat year_dir @@ Format.sprintf "%02d.txt" day
     in
     if Sys.file_exists filename then Ok (read_file filename)
-      (* If not, fetch it from adventofcode.com *)
     else
+      let () = print_endline "Input not cached: fetching from adventofcode.com..." in
       match credentials with
       | None ->
           Error "Cannot fetch input from adventofcode.com: missing credentials."
@@ -57,6 +57,7 @@ module Run_mode = struct
           let headers = Credentials.to_headers credentials in
           let@ { body } = Ezcurl.get ~url ~headers () in
           write_file filename body;
+          Printf.printf "Got input; wrote to %s\n" filename;
           Result.ok body
 
   let get_input (year : int) (day : int) : t -> (string, string) result =
@@ -82,7 +83,7 @@ module Run_mode = struct
         in
         let content = `String (Printf.sprintf "level=%d&answer=%s" part output) in
         let@ res = Ezcurl.post ~url ~headers ~content ~params:[] () in
-        Result.ok @@ failwith "todo"
+        Result.ok @@ failwith "cleanup todo"
 end
 
 module Options = struct
