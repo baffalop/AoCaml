@@ -33,8 +33,7 @@ end = struct
     let* ranges = Parser.lines_of range in
     string "\n\n" *>
     let* ingredients = Parser.lines_of Parser.u_dec in
-    let open Inventory in
-    return { ranges; ingredients }
+    return Inventory.{ ranges; ingredients }
 
   let parse : string -> (Inventory.t, string) result =
     parse_string ~consume:Prefix inventory
