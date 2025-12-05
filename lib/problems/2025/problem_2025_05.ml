@@ -44,11 +44,18 @@ module Solution(Part : sig
 end) : sig
   val run : string -> (string, string) result
 end = struct
-  let run = Parse.parse >> Result.map Inventory.show (*Part.solve >> string_of_int*)
+  let run = Parse.parse >> Result.map (Part.solve >> string_of_int)
 end
 
 module Part_1 = Solution(struct
-  let solve _ = failwith "todo"
+  open Inventory
+
+  let within (id : int) ((a, b) : range) : bool = a <= id && id <= b
+
+  let solve { ranges; ingredients } : int =
+    ingredients
+    |> List.filter (fun id -> List.exists (within id) ranges)
+    |> List.length
 end)
 
 module Part_2 = Solution(struct
