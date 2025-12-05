@@ -15,14 +15,15 @@ module Parse : sig
   val parse : string -> (Range.t list, string) result
 end = struct
   open Angstrom
+  open Parser
 
   let range : Range.t t =
-    let* a = Parser.u_dec <* char '-' in
-    let* b = Parser.u_dec in
+    let* a = u_dec <* char '-' in
+    let* b = u_dec in
     return (a, b)
 
   let parse : string -> (Range.t list, string) result =
-    parse_string ~consume:Prefix @@ sep_by1 (char ',') range
+    parse_string ~consume:Prefix @@ lines_of range
 end
 
 module Solution(Part : sig

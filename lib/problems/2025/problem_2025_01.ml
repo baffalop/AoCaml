@@ -9,17 +9,18 @@ module Parse : sig
   val parse : string -> (turns, string) result
 end = struct
   open Angstrom
+  open Parser
 
   let turn : int t =
     let* dir = choice [
       char 'L' *> return (-1);
       char 'R' *> return 1;
     ] in
-    let* n = Parser.u_dec in
+    let* n = u_dec in
     return (dir * n)
 
   let parse : string -> (turns, string) result =
-    parse_string ~consume:Prefix @@ sep_by1 (char '\n') turn
+    parse_string ~consume:Prefix @@ lines_of turn
 end
 
 let (%) x y =
