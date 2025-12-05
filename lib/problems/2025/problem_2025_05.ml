@@ -59,5 +59,19 @@ module Part_1 = Solution(struct
 end)
 
 module Part_2 = Solution(struct
-  let solve _ = failwith "todo"
+  let merge (ranges : range list) : range list =
+    let sorted = List.sort (fun (a1, _) (a2, _) -> compare a1 a2) ranges in
+    let (results, final_range) =
+      sorted
+      |> List.drop 1
+      |> List.fold_left (fun (ranges, (prev_a, prev_b)) (a, b) ->
+        if a <= prev_b then (ranges, (prev_a, b))
+        else  ((prev_a, prev_b) :: ranges, (a, b))
+      ) ([], List.hd sorted)
+    in
+    final_range :: results
+
+  let solve Inventory.{ ranges } : int =
+    merge ranges
+    |> List.fold_left (fun total (a, b) -> total + (b - a + 1)) 0
 end)
