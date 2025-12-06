@@ -99,8 +99,16 @@ module Run_mode = struct
           @ [ ("Content-Type", "application/x-www-form-urlencoded") ]
         in
         let content = `String (Printf.sprintf "level=%d&answer=%s" part output) in
-        let@ res = Ezcurl.post ~url ~headers ~content ~params:[] () in
-        Result.ok @@ Some res.Ezcurl.body
+        let@ Ezcurl.{ body } = Ezcurl.post ~url ~headers ~content ~params:[] () in
+        let html = Soup.parse body in
+        let feedback =
+          let open Soup in
+          try html $ "main" |> Soup.R.leaf_text
+          with
+          | err -> Printf.sprintf "%s\n\n[Response received: parse error...\n%s]"
+            body (Printexc.to_string err)
+        in
+        Result.ok @@ Some feedback
 end
 
 module Options = struct
