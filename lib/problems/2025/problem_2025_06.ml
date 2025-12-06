@@ -6,24 +6,37 @@ open Import
 type op = Add | Mul
 type padded_digits = int option list
 
-type sum_grid = {
-  inputs: padded_digits list list;
-  ops: op list;
-}
+module Presum = struct
+  type t = {
+    inputs: padded_digits list;
+    op: op;
+  }
+end
 
-type sum = {
-  inputs: int list;
-  op: op;
-}
+module Sum = struct
+  type t = {
+    inputs: int list;
+    op: op;
+  }
+end
 
-type sums = sum list
+type sums = Sum.t list
 
 let show_op = function
   | Add -> "+"
   | Mul -> "*"
 
-let show_sum { inputs; op } : string =
+let show_sum Sum.{ inputs; op } : string =
   Fmt.str "%a %s" Fmt.(list ~sep:(any ", ") int) inputs (show_op op)
+
+let show_padded_digits : padded_digits -> string =
+  String.concat "" << List.map (function
+    | None -> "."
+    | Some d -> string_of_int d)
+
+let show_presum Presum.{ inputs; op } : string =
+  let inputs = String.concat " " @@ List.map show_padded_digits inputs in
+  Printf.sprintf "%s %s" inputs (show_op op)
 
 let show : sums -> string =
   List.map show_sum
@@ -41,44 +54,61 @@ let unpad : padded_digits -> int =
   List.filter_map id >> int_of_digits
 
 module Parse : sig
-  val parse : string -> (sum_grid, string) result
+  val parse : string -> (Presum.t list, string) result
 end = struct
   open Angstrom
   open Parser
 
-  let spaces : unit t = ignore <$> many (char ' ')
-  let spaces1 : unit t = ignore <$> many1 (char ' ')
+  type op_segment = {
+    op: op;
+    length: int;
+  }
+
+  let spaces : int t = List.length <$> many (char ' ')
+  let spaces1 : int t = List.length <$> many1 (char ' ')
 
   let padded_digits : padded_digits t =
-    let* blanks = many @@ char ' ' *> return None in
-    let* digits = many1 (Option.some <$> digit) in
-    return @@ blanks @ digits
+    many1 @@ choice [
+      return None <* char ' ';
+      Option.some <$> digit;
+    ]
 
-  let n_row : padded_digits list t =
-    spaces *> sep_by1 (char ' ') padded_digits <* spaces
+  let op : op t = choice [
+    char '+' *> return Add;
+    char '*' *> return Mul;
+  ]
 
-  let op_row : op list t =
-    spaces *> sep_by1 spaces1 (choice [
-      char '+' *> return Add;
-      char '*' *> return Mul;
-    ]) <* spaces
+  let op_row : op_segment list t =
+    sep_by1 (char ' ') @@
+    let* op = op in
+    let* length = spaces in
+    return { op; length }
 
-  let sum_grid : sum_grid t =
-    let* inputs = lines_of n_row in
+  let presums : Presum.t list t =
+    let* rows = lines_of padded_digits in
     char '\n' *>
-    let* ops = op_row in
-    return { inputs; ops }
+    let* segments = op_row in
+    segments
+    |> List.fold_left_map (fun (inputs : padded_digits list) { op; length } ->
+      inputs |> List.map (List.drop @@ length + 1),
+      Presum.{
+        op;
+        inputs = inputs |> List.map (List.take length);
+      }
+    ) rows
+    |> snd |> return
 
-  let parse : string -> (sum_grid, string) result = parse_string ~consume:Prefix sum_grid
+  let parse : string -> (Presum.t list, string) result =
+    parse_string ~consume:Prefix presums
 end
 
 module Solution(Part : sig
-  val make_sums : sum_grid -> sums
+  val make_sum : Presum.t -> Sum.t
 end) : sig
   val run : string -> (string, string) result
 end = struct
   let do_sums : sums -> int =
-    List.fold_left (fun sum { inputs; op } ->
+    List.fold_left (fun sum Sum.{ inputs; op } ->
       let (op, id) = match op with
       | Add -> ( + ), 0
       | Mul -> ( * ), 1
@@ -86,18 +116,17 @@ end = struct
       sum + List.fold_left op id inputs
     ) 0
 
-  let run = Parse.parse >> Result.map (Part.make_sums >> do_sums >> string_of_int)
+  let run = Parse.parse >> Result.map (List.map show_presum >> String.concat "\n")
+    (* List.map Part.make_sum >> do_sums >> string_of_int *)
 end
 
 module Part_1 = Solution(struct
-  let make_sums { inputs; ops } : sums =
-    rotate inputs
-    |> List.mapi (fun i inputs -> {
-      inputs = List.map unpad inputs;
-      op = List.nth ops i
-    })
+  let make_sum Presum.{ inputs; op } : Sum.t = Sum.{
+    inputs = List.map unpad inputs;
+    op;
+  }
 end)
 
 module Part_2 = Solution(struct
-  let make_sums _ = failwith "part 2"
+  let make_sum _ = failwith "part 2"
 end)
