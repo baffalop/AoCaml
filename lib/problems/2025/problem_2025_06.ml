@@ -8,7 +8,7 @@ type padded_digits = int option list
 
 module Presum = struct
   type t = {
-    inputs: padded_digits list;
+    digits: padded_digits list;
     op: op;
   }
 end
@@ -34,8 +34,8 @@ let show_padded_digits : padded_digits -> string =
     | None -> "."
     | Some d -> string_of_int d)
 
-let show_presum Presum.{ inputs; op } : string =
-  let inputs = String.concat " " @@ List.map show_padded_digits inputs in
+let show_presum Presum.{ digits; op } : string =
+  let inputs = String.concat " " @@ List.map show_padded_digits digits in
   Printf.sprintf "%s %s" inputs (show_op op)
 
 let show : sums -> string =
@@ -79,10 +79,10 @@ end = struct
   ]
 
   let op_row : op_segment list t =
-    sep_by1 (char ' ') @@
+    many1 @@
     let* op = op in
     let* length = spaces in
-    return { op; length }
+    return { op; length = length + 1 }
 
   let presums : Presum.t list t =
     let* rows = lines_of padded_digits in
@@ -90,10 +90,10 @@ end = struct
     let* segments = op_row in
     segments
     |> List.fold_left_map (fun (inputs : padded_digits list) { op; length } ->
-      inputs |> List.map (List.drop @@ length + 1),
+      inputs |> List.map (List.drop length),
       Presum.{
         op;
-        inputs = inputs |> List.map (List.take length);
+        digits = inputs |> List.map (List.take length);
       }
     ) rows
     |> snd |> return
@@ -103,10 +103,15 @@ end = struct
 end
 
 module Solution(Part : sig
-  val make_sum : Presum.t -> Sum.t
+  val make_inputs : padded_digits list -> int list
 end) : sig
   val run : string -> (string, string) result
 end = struct
+  let make_sum Presum.{ digits; op } = Sum.{
+    op;
+    inputs = Part.make_inputs digits
+  }
+
   let do_sums : sums -> int =
     List.fold_left (fun sum Sum.{ inputs; op } ->
       let (op, id) = match op with
@@ -116,17 +121,14 @@ end = struct
       sum + List.fold_left op id inputs
     ) 0
 
-  let run = Parse.parse >> Result.map (List.map show_presum >> String.concat "\n")
-    (* List.map Part.make_sum >> do_sums >> string_of_int *)
+  let run = Parse.parse >> Result.map (*List.map show_presum >> String.concat "\n"*)
+    (List.map make_sum >> do_sums >> string_of_int)
 end
 
 module Part_1 = Solution(struct
-  let make_sum Presum.{ inputs; op } : Sum.t = Sum.{
-    inputs = List.map unpad inputs;
-    op;
-  }
+  let make_inputs = List.map unpad
 end)
 
 module Part_2 = Solution(struct
-  let make_sum _ = failwith "part 2"
+  let make_inputs = rotate >> List.map unpad >> List.filter ((<>) 0)
 end)
