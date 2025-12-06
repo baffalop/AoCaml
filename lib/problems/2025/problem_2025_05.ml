@@ -69,7 +69,7 @@ module Part_2 = Solution(struct
       sorted
       |> List.drop 1
       |> List.fold_left (fun (ranges, (prev_a, prev_b)) (a, b) ->
-        if a <= prev_b then (ranges, (prev_a, b))
+        if a <= prev_b then (ranges, (prev_a, max b prev_b))
         else  ((prev_a, prev_b) :: ranges, (a, b))
       ) ([], List.hd sorted)
     in
