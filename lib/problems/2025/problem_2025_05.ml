@@ -60,7 +60,7 @@ end)
 
 module Part_2 = Solution(struct
   let merge (ranges : range list) : range list =
-    let sorted = List.sort (fun (a1, _) (a2, _) -> compare a1 a2) ranges in
+    let sorted = List.sort compare ranges in
     let (results, final_range) =
       sorted
       |> List.drop 1
