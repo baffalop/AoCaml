@@ -64,19 +64,20 @@ module IntMap = Map.Make(Int)
 type superposition = int IntMap.t
 
 module Part_2 = Solution(struct
-  let solve { emitter; splitters } : int =
-    let add_ray count = function
+  let add_ray ~pos:(pos : int) ~count:(count : int) : superposition -> superposition =
+    IntMap.update pos @@ function
       | None -> Some count
       | Some n -> Some (n + count)
-    in
+
+  let solve { emitter; splitters } : int =
     let rays = splitters
       |> List.fold_left (fun (rays : superposition) splitter_row ->
         IntMap.fold (fun pos count (rays : superposition) ->
           if IntSet.mem pos splitter_row
           then rays
-            |> IntMap.update (pos - 1) (add_ray count)
-            |> IntMap.update (pos + 1) (add_ray count)
-          else rays |> IntMap.add pos count
+            |> add_ray ~pos:(pos - 1) ~count
+            |> add_ray ~pos:(pos + 1) ~count
+          else rays |> add_ray ~pos ~count
         ) rays IntMap.empty
       ) (IntMap.singleton emitter 1)
     in
