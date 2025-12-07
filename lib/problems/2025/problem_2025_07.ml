@@ -46,16 +46,39 @@ end
 module Part_1 = Solution(struct
   let solve { emitter; splitters } : int =
     splitters
-    |> List.fold_left (fun (total_splits, rays) splitters_row ->
+    |> List.fold_left (fun (total_splits, rays) splitter_row ->
       IntSet.fold (fun pos (total_splits, rays) ->
-        if IntSet.mem pos splitters_row
-        then (total_splits + 1, rays |> IntSet.add (pos + 1) |> IntSet.add (pos - 1))
-        else (total_splits, rays |> IntSet.add pos)
+        if IntSet.mem pos splitter_row
+        then total_splits + 1,
+          rays
+          |> IntSet.add (pos + 1)
+          |> IntSet.add (pos - 1)
+        else total_splits,
+          rays |> IntSet.add pos
       ) rays (total_splits, IntSet.empty)
     ) (0, IntSet.singleton emitter)
     |> fst
 end)
 
+module IntMap = Map.Make(Int)
+type superposition = int IntMap.t
+
 module Part_2 = Solution(struct
-  let solve _ : int = failwith "part 2"
+  let solve { emitter; splitters } : int =
+    let add_ray count = function
+      | None -> Some count
+      | Some n -> Some (n + count)
+    in
+    let rays = splitters
+      |> List.fold_left (fun (rays : superposition) splitter_row ->
+        IntMap.fold (fun pos count (rays : superposition) ->
+          if IntSet.mem pos splitter_row
+          then rays
+            |> IntMap.update (pos - 1) (add_ray count)
+            |> IntMap.update (pos + 1) (add_ray count)
+          else rays |> IntMap.add pos count
+        ) rays IntMap.empty
+      ) (IntMap.singleton emitter 1)
+    in
+    IntMap.fold (fun _ count total -> total + count) rays 0
 end)
