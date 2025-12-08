@@ -10,6 +10,20 @@ type manifold = {
   splitters: IntSet.t list;
 }
 
+let parse (input : string) : manifold =
+  let lines = input |> String.split_on_char '\n' in
+  let emitter = String.index (List.hd lines) 'S' in
+  let splitters =
+    List.drop 1 lines
+    |> List.map (String.fold_left (fun (i, splitters) c ->
+      i + 1, match c with
+      | '^' -> IntSet.add i splitters
+      | _ -> splitters
+    ) (0, IntSet.empty)
+    >> snd
+    )
+  in { emitter; splitters }
+
 let show { emitter; splitters } : string =
   Printf.sprintf "Emitter: %d\nSplitters:\n%s\n" emitter
     @@ String.concat "\n"
@@ -17,30 +31,12 @@ let show { emitter; splitters } : string =
       (IntSet.elements >> List.map string_of_int >> String.concat ", ")
       splitters
 
-module Parse : sig
-  val parse : string -> manifold
-end = struct
-  let parse (input : string) : manifold =
-    let lines = input |> String.split_on_char '\n' in
-    let emitter = String.index (List.hd lines) 'S' in
-    let splitters =
-      List.drop 1 lines
-      |> List.map (String.fold_left (fun (i, splitters) c ->
-          i + 1, match c with
-          | '^' -> IntSet.add i splitters
-          | _ -> splitters
-        ) (0, IntSet.empty)
-        >> snd
-      )
-    in { emitter; splitters }
-end
-
 module Solution(Part : sig
   val solve : manifold -> int
 end) : sig
   val run : string -> (string, string) result
 end = struct
-  let run = Parse.parse >> Part.solve >> string_of_int >> Result.ok
+  let run = parse >> Part.solve >> string_of_int >> Result.ok
 end
 
 module Part_1 = Solution(struct
