@@ -3,11 +3,11 @@ let day = 10
 
 open Import
 
-module Button = Set.Make(Int)
+module IntSet = Set.Make(Int)
 
 type machine = {
-  lights: bool list;
-  buttons: Button.t list;
+  lights: IntSet.t;
+  buttons: IntSet.t list;
   joltages: int list;
 }
 
@@ -18,13 +18,18 @@ end = struct
   open Parser
 
   let machine : machine t =
-    let* lights = bounded_by '[' ']' @@ many1 @@ choice [
+    let* lights_bool : bool list = bounded_by '[' ']' @@ many1 @@ choice [
       char '#' *> return true;
       char '.' *> return false;
     ] in
+    let lights = lights_bool
+      |> List.mapi (fun i x -> if x then Some i else None)
+      |> List.filter_map id
+      |> IntSet.of_list
+    in
     char ' ' *>
-    let* buttons = sep_by1 (char ' ')
-      @@ bounded_by '(' ')' (Button.of_list <$> sep_by1 (char ',') u_dec)
+    let* buttons : IntSet.t list = sep_by1 (char ' ')
+      @@ bounded_by '(' ')' (IntSet.of_list <$> sep_by1 (char ',') u_dec)
     in
     char ' ' *>
     let* joltages = bounded_by '{' '}' @@ sep_by1 (char ',') u_dec in
@@ -35,10 +40,11 @@ end = struct
 end
 
 let show : machine list -> string =
+  let show_set = IntSet.elements >> List.map string_of_int >> String.concat "," in
   List.map (fun { lights; buttons; joltages } ->
     Printf.sprintf "Lights: %s\nButtons: %s\nJoltages: %s\n"
-      (lights |> List.map (fun x -> if x then "#" else ".") |> String.concat "")
-      (buttons |> List.map (Button.elements >> List.map string_of_int >> String.concat ",") |> String.concat " ")
+      (show_set lights)
+      (buttons |> List.map show_set |> String.concat " ")
       (joltages |> List.map string_of_int |> String.concat ",")
   )
   >> String.concat "\n"
