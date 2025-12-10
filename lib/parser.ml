@@ -15,3 +15,6 @@ let u_dec : int t =
 
 let lines_of (p : 'a t) : 'a list t =
   sep_by1 (char '\n') p
+
+let bounded_by (opening : char) (closing : char) (p : 'a t) : 'a t =
+  char opening *> p <* char closing
