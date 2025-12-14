@@ -24,15 +24,15 @@ end = struct
   open Angstrom
 
   let range : range t =
-    let* a = Parser.u_dec in
+    let* a = Parsers.u_dec in
     char '-' *>
-    let* b = Parser.u_dec in
+    let* b = Parsers.u_dec in
     return (a, b)
 
   let inventory : Inventory.t t =
-    let* ranges = Parser.lines_of range in
+    let* ranges = Parsers.lines_of range in
     string "\n\n" *>
-    let* ingredients = Parser.lines_of Parser.u_dec in
+    let* ingredients = Parsers.lines_of Parsers.u_dec in
     return Inventory.{ ranges; ingredients }
 
   let parse : string -> (Inventory.t, string) result =

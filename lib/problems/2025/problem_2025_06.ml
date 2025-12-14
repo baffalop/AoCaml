@@ -57,7 +57,7 @@ module Parse : sig
   val parse : string -> (Presum.t list, string) result
 end = struct
   open Angstrom
-  open Parser
+  open Parsers
 
   type op_segment = {
     op: op;

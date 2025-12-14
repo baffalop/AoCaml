@@ -15,7 +15,7 @@ module Parse : sig
   val parse : string -> (Range.t list, string) result
 end = struct
   open Angstrom
-  open Parser
+  open Parsers
 
   let range : Range.t t =
     let* a = u_dec <* char '-' in

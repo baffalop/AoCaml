@@ -8,7 +8,7 @@ type coords = coord list
 
 let parse : string -> (coords, string) result =
   let open Angstrom in
-  let open Parser in
+  let open Parsers in
   parse_string ~consume:Prefix @@ lines_of @@
   let* x = u_dec in
   let* y = char ',' *> u_dec in

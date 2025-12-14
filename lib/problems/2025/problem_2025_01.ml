@@ -9,7 +9,7 @@ module Parse : sig
   val parse : string -> (turns, string) result
 end = struct
   open Angstrom
-  open Parser
+  open Parsers
 
   let turn : int t =
     let* dir = choice [
