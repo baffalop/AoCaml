@@ -56,15 +56,9 @@ end) = struct
   let run = Parse.parse >> Result.map (Part.solve >> string_of_int)
 end
 
-let press_button (lights : IntSet.t) (button : IntSet.t) =
-  IntSet.union lights button
-  |> IntSet.filter (fun light ->
-    IntSet.mem light button <> IntSet.mem light lights
-  )
-
 let rec choose (n : int) (pool : 'a list) : 'a list list =
-  if n <= 0 then [[]] else
-  pool
+  if n <= 0 then [[]]
+  else pool
   |> List.take (List.length pool - n + 1)
   |> List.mapi (fun i x ->
     choose (n - 1) (List.drop (i + 1) pool)
@@ -72,18 +66,24 @@ let rec choose (n : int) (pool : 'a list) : 'a list list =
   )
   |> List.flatten
 
-let min_presses { lights; buttons; _ } =
-  let rec try_choose (n : int) =
-    let chosen = choose n buttons in
-    let target_reached = chosen |> List.exists (fun buttons ->
-        List.fold_left press_button IntSet.empty buttons
-        |> IntSet.equal lights
-    ) in
-    if target_reached then n else try_choose (n + 1)
-  in
-  try_choose 1
-
 module Part_1 = Solution(struct
+  let press_button (lights : IntSet.t) (button : IntSet.t) =
+    IntSet.union lights button
+    |> IntSet.filter (fun light ->
+      IntSet.mem light button <> IntSet.mem light lights
+    )
+
+  let min_presses { lights; buttons; _ } =
+    let rec try_choose (n : int) =
+      let chosen = choose n buttons in
+      let target_reached = chosen |> List.exists (fun buttons ->
+          List.fold_left press_button IntSet.empty buttons
+          |> IntSet.equal lights
+      ) in
+      if target_reached then n else try_choose (n + 1)
+    in
+    try_choose 1
+
   let solve : machine list -> int = List.map min_presses >> List.fold_left (+) 0
 end)
 
