@@ -3,19 +3,13 @@ let day = 5
 
 open Import
 
-type range = int * int
+type range = int * int [@@deriving show]
 
 module Inventory = struct
   type t = {
     ranges: range list;
     ingredients: int list;
-  }
-
-  let show { ranges; ingredients } : string =
-    Fmt.(str "Ranges:\n%a\n\nIngredients:\n%a\n"
-      (list ~sep:(any "\n") @@ pair ~sep:(any ", ") int int) ranges
-      (list ~sep:(any "\n") int) ingredients
-    )
+  } [@@deriving show]
 end
 
 module Parse : sig
@@ -44,7 +38,7 @@ module Solution(Part : sig
 end) : sig
   val run : string -> (string, string) result
 end = struct
-  let run = Parse.parse >> Result.map (Part.solve >> string_of_int)
+  let run = Parse.parse >> Result.map Inventory.show
 end
 
 module Part_1 = Solution(struct

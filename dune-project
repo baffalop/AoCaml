@@ -27,5 +27,6 @@
   ezcurl
   (fmt (>= 0.9.0))
   angstrom
+  ppx_deriving
   )
  (tags ("advent-of-code")))
