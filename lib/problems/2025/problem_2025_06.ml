@@ -27,7 +27,7 @@ let show_op = function
   | Mul -> "*"
 
 let show_sum Sum.{ inputs; op } : string =
-  Fmt.str "%a %s" Fmt.(list ~sep:(any ", ") int) inputs (show_op op)
+  Fmt.(str "%a %s" (list ~sep:comma int)) inputs (show_op op)
 
 let show_padded_digits : padded_digits -> string =
   String.concat "" << List.map (function

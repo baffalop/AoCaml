@@ -3,9 +3,7 @@ let day = 3
 
 open Import
 
-type jbank = int list
-
-let show : jbank -> string = String.concat " " << List.map string_of_int
+type jbank = int list [@@deriving show]
 
 let parse : string -> jbank list =
   String.split_on_char '\n'

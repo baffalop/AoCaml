@@ -3,8 +3,8 @@ let day = 8
 
 open Import
 
-type coord = int * int * int
-type coords = coord list
+type coord = int * int * int [@@deriving show]
+type coords = coord list [@@deriving show]
 
 let parse : string -> (coords, string) result =
   let open Angstrom in
@@ -13,16 +13,12 @@ let parse : string -> (coords, string) result =
   let triple x y z = (x, y, z) in
   triple <$> u_dec <* char ',' <*> u_dec <* char ',' <*> u_dec
 
-let show : coords -> string =
-  List.map (fun (x, y, z) -> Printf.sprintf "(%d, %d, %d)" x y z)
-  >> String.concat "\n"
-
 module Solution(Part : sig
   val solve : coords -> int
 end) : sig
   val run : string -> (string, string) result
 end = struct
-  let run = parse >> Result.map show (*Part.solve >> string_of_int*)
+  let run = parse >> Result.map show_coords (*Part.solve >> string_of_int*)
 end
 
 module Part_1 = Solution(struct
