@@ -12,5 +12,5 @@
 (library
  (name problems)
  (preprocess (pps ppx_deriving.show))
- (libraries problem import angstrom)
+ (libraries problem import angstrom base)
  )
