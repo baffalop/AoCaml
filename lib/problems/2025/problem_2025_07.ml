@@ -3,12 +3,12 @@ let day = 7
 
 open Import
 
-module IntSet = Set.Make(Int)
+module IntSet = (val Set.make_showable (module Int) (Fmt.int))
 
 type manifold = {
   emitter: int;
   splitters: IntSet.t list;
-}
+} [@@deriving show]
 
 let parse (input : string) : manifold =
   let lines = input |> String.split_on_char '\n' in
@@ -24,19 +24,12 @@ let parse (input : string) : manifold =
     )
   in { emitter; splitters }
 
-let show { emitter; splitters } : string =
-  Printf.sprintf "Emitter: %d\nSplitters:\n%s\n" emitter
-    @@ String.concat "\n"
-    @@ List.map
-      (IntSet.elements >> List.map string_of_int >> String.concat ", ")
-      splitters
-
 module Solution(Part : sig
   val solve : manifold -> int
 end) : sig
   val run : string -> (string, string) result
 end = struct
-  let run = parse >> Part.solve >> string_of_int >> Result.ok
+  let run = parse >> show_manifold >> Result.ok
 end
 
 module Part_1 = Solution(struct

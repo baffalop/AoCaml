@@ -3,13 +3,13 @@ let day = 10
 
 open Import
 
-module IntSet = Set.Make(Int)
+module IntSet = (val Set.make_showable (module Int) (Fmt.int))
 
 type machine = {
   lights: IntSet.t;
   buttons: IntSet.t list;
   joltages: int list;
-}
+} [@@deriving show]
 
 module Parse : sig
   val parse : string -> (machine list, string) result
