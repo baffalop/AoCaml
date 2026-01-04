@@ -46,13 +46,13 @@ let show : sums -> string =
 let rotate (matrix : 'a list list) : 'a list list =
   matrix
   |> List.hd_exn
-  |> List.mapi ~f:(fun i _ -> List.map ~f:(flip List.nth_exn i) matrix)
+  |> List.mapi ~f:(fun i _ -> List.map ~f:(Fn.flip List.nth_exn i) matrix)
 
 let int_of_digits : int list -> int =
   List.fold ~init:0 ~f:(fun n d -> n * 10 + d)
 
 let unpad : padded_digits -> int =
-  List.filter_map ~f:id >> int_of_digits
+  List.filter_map ~f:Fn.id >> int_of_digits
 
 module Parse : sig
   val parse : string -> (Presum.t list, string) Result.t
@@ -91,10 +91,10 @@ end = struct
     let* segments = op_row in
     segments
     |> List.fold_map ~init:rows ~f:(fun (inputs : padded_digits list) { op; length } ->
-      inputs |> List.map ~f:(flip List.drop length),
+      inputs |> List.map ~f:(Fn.flip List.drop length),
       Presum.{
         op;
-        digits = inputs |> List.map ~f:(flip List.take length);
+        digits = inputs |> List.map ~f:(Fn.flip List.take length);
       }
     )
     |> snd |> return

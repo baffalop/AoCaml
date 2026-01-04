@@ -25,7 +25,7 @@ end = struct
     ] in
     let lights = lights_bool
       |> List.mapi ~f:(fun i x -> if x then Some i else None)
-      |> List.filter_map ~f:id
+      |> List.filter_map ~f:Fn.id
       |> IntSet.of_list
     in
     char ' ' *>
@@ -60,7 +60,7 @@ end
 let rec choose (n : int) (pool : 'a list) : 'a list list =
   if n <= 0 then [[]]
   else pool
-  |> flip List.take (List.length pool - n + 1)
+  |> Fn.flip List.take (List.length pool - n + 1)
   |> List.mapi ~f:(fun i x ->
     choose (n - 1) (List.drop pool (i + 1))
     |> List.map ~f:(List.cons x)

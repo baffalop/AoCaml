@@ -62,7 +62,7 @@ module Part_2 = Solution(struct
     ) in
     let (results, final_range) =
       sorted
-      |> flip List.drop 1
+      |> Fn.flip List.drop 1
       |> List.fold ~init:([], List.hd_exn sorted)
         ~f:(fun (ranges, (prev_a, prev_b)) (a, b) ->
           if a <= prev_b then (ranges, (prev_a, max b prev_b))

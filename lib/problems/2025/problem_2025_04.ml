@@ -29,7 +29,7 @@ let neighbours (x, y) : coord list =
   ]
 
 let accessible (coord : coord) ~map:(map : map) : bool =
-  let adjacents = neighbours coord |> List.filter ~f:(flip GridMap.mem map) in
+  let adjacents = neighbours coord |> List.filter ~f:(Fn.flip GridMap.mem map) in
   List.length adjacents < 4
 
 module Solution(Part : sig
