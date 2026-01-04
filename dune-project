@@ -24,6 +24,7 @@
   reason
   dune
   base
+  core
   (cmdliner(>= 1.2.0))
   ezcurl
   (fmt (>= 0.9.0))

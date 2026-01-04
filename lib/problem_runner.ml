@@ -1,3 +1,4 @@
+open Core
 open Let
 
 type headers = (string * string) list
@@ -22,32 +23,27 @@ module Run_mode = struct
     | Submit of { credentials : Credentials.t }
 
   let read_file (filename : string) : string =
-    let ch = open_in_bin filename in
-    let s = really_input_string ch (in_channel_length ch) in
-    close_in ch;
-    s
+    In_channel.with_file filename ~f:(fun ch -> In_channel.input_all ch)
 
   let write_file (filename : string) (contents : string) : unit =
-    let ch = open_out_bin filename in
-    let () = output_string ch contents in
-    close_out ch
+    Out_channel.write_all filename ~data:contents
 
   let init_cache (year : int) : string =
-    if not (Sys.file_exists "inputs") then Sys.mkdir "inputs" 0o777;
-    let year_dir = Filename.concat "inputs" @@ string_of_int year in
-    if not (Sys.file_exists year_dir) then Sys.mkdir year_dir 0o777;
+    if not (Stdlib.Sys.file_exists "inputs") then Stdlib.Sys.mkdir "inputs" 0o777;
+    let year_dir = Filename.concat "inputs" @@ Int.to_string year in
+    if not (Stdlib.Sys.file_exists year_dir) then Stdlib.Sys.mkdir year_dir 0o777;
     year_dir
 
   let get_example_input ~year:(year : int) ~day:(day : int) (input : string option) : (string, string) result =
     let year_dir = init_cache year in
-    let filename = Filename.concat year_dir @@ Format.sprintf "%02d-ex.txt" day in
+    let filename = Filename.concat year_dir @@ Printf.sprintf "%02d-ex.txt" day in
     match input with
     | Some input -> (
       write_file filename input;
-      Ok input
+      Result.return input
     )
     | None ->
-      if Sys.file_exists filename then Ok (read_file filename)
+      if Stdlib.Sys.file_exists filename then Result.return @@ read_file filename
       else Error "No example input in cache: please pass in via stdin"
 
   let get_puzzle_input (year : int) (day : int)
@@ -55,16 +51,16 @@ module Run_mode = struct
     (* Create cache directory structure *)
     let year_dir = init_cache year in
     (* Check if cached input exists *)
-    let filename = Filename.concat year_dir @@ Format.sprintf "%02d.txt" day in
-    if Sys.file_exists filename then Ok (read_file filename)
+    let filename = Filename.concat year_dir @@ Printf.sprintf "%02d.txt" day in
+    if Stdlib.Sys.file_exists filename then Result.return (read_file filename)
     else
       let () = print_endline "Input not cached: fetching from adventofcode.com..." in
       match credentials with
       | None ->
           Error "Cannot fetch input from adventofcode.com: missing credentials."
       | Some credentials ->
-          Result.map_error (fun (code, msg) ->
-            Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
+          Result.map_error ~f:(fun (code, msg) ->
+              Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
           @@ Eio_main.run
           @@ fun env ->
           Eio.Switch.run
@@ -74,7 +70,7 @@ module Run_mode = struct
           let@ { body } = Ezcurl.get ~url ~headers () in
           write_file filename body;
           Printf.printf "Got input; wrote to %s\n" filename;
-          Result.ok body
+          Result.return body
 
   let get_input (year : int) (day : int) : t -> (string, string) result =
     function
@@ -86,10 +82,11 @@ module Run_mode = struct
   let cleanup (year : int) (day : int) (part : int) (output : string)
       (run_mode : t) : (string option, string) result =
     match run_mode with
-    | Test_from_puzzle_input _ | Example _ -> Ok None
+    | Test_from_puzzle_input _ | Example _ -> Result.return None
     | Submit { credentials } ->
-        Result.map_error (fun (code, msg) ->
-          Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
+        Result.map_error
+          ~f:(fun (code, msg) ->
+            Printf.sprintf "[Code %d] %s" (Curl.int_of_curlCode code) msg)
         @@ Eio_main.run
         @@ fun env ->
         Eio.Switch.run
@@ -106,9 +103,9 @@ module Run_mode = struct
           try html $ "main" |> Soup.R.leaf_text
           with
           | err -> Printf.sprintf "%s\n\n[Response received: parse error...\n%s]"
-            body (Printexc.to_string err)
+            body (Exn.to_string err)
         in
-        Result.ok @@ Some feedback
+        Result.return @@ Some feedback
 end
 
 module Options = struct
@@ -122,26 +119,26 @@ let run_problem (module Problem : Problem.T) (run_mode : Run_mode.t)
     match part with
     | 1 -> Problem.Part_1.run input
     | 2 -> Problem.Part_2.run input
-    | p -> Error (Format.sprintf {|Invalid part "%d". Expected "1" or "2".|} p)
+    | p -> Error (Printf.sprintf {|Invalid part "%d". Expected "1" or "2".|} p)
   in
   let@ cleanup_result = Run_mode.cleanup year day part result run_mode in
   let () =
     match cleanup_result with None -> () | Some result -> print_endline result
   in
-  Ok result
+  Result.return result
 
 let find_problem (year : int) (day : int) :
     ((module Problem.T), string) result =
   match
-    List.find_opt
-      (fun (module Problem : Problem.T) ->
+    List.find
+      ~f:(fun (module Problem : Problem.T) ->
         Problem.year = year && Problem.day = day)
       Problems.All.all
   with
-  | Some p -> Ok p
+  | Some p -> Result.return p
   | None ->
       Error
-        (Format.sprintf "Problem (year = %d, day = %d) not implemented."
+        (Printf.sprintf "Problem (year = %d, day = %d) not implemented."
            year day)
 
 let run (options : Options.t) : (string, string) result =

@@ -1,7 +1,7 @@
 (library
  (name aoc)
  (modules drivers problem_runner)
- (libraries cmdliner ezcurl problems import angstrom lambdasoup)
+ (libraries core cmdliner ezcurl problems import angstrom lambdasoup)
  )
 
 (library
