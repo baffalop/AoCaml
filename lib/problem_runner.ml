@@ -7,11 +7,11 @@ module Credentials: sig
   val of_auth_token : string -> t
   val to_headers : t -> headers
 end = struct
-  type t = Token of string
+  type t = string
 
-  let of_auth_token (x : string) : t = Token x
+  let of_auth_token (x : string) : t = x
 
-  let to_headers (Token t : t) : headers =
+  let to_headers (t : t) : headers =
     [ ("Cookie", "session=" ^ t) ]
 end
 
