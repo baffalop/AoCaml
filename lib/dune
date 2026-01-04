@@ -7,7 +7,7 @@
 (library
  (name import)
  (wrapped false)
- (modules import let fn parsers grid)
+ (modules import let func parsers grid)
  (libraries base fmt eio_main angstrom))
 
 (library

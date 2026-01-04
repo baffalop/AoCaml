@@ -1,5 +1,3 @@
-open Import
-
 module Cli = struct
   open Cmdliner
 
@@ -44,6 +42,7 @@ module Cli = struct
       ~example:(example : bool) ~submit:(submit : bool)
       ~token:(auth_token : string option) : unit Cmdliner.Term.ret =
       let output : (string, string) result =
+        let open Let in
         let@ (year, day) = match year, day with
           | Some year, Some day -> Ok (year, day)
           | _, _ ->

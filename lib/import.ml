@@ -1,13 +1,14 @@
+include Base
+include Func
 include Let
-include Fn
 
 module Set = struct
-  include Set
+  include Stdlib.Set
 
   module type Showable = sig
-    include Set.S
+    include Stdlib.Set.S
 
-    val pp : Format.formatter -> t -> unit
+    val pp : Formatter.t -> t -> unit
   end
 
   (** Set.Make but the resulting module is usable with [@@deriving show] *)
