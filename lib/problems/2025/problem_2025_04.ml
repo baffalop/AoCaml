@@ -1,6 +1,7 @@
 let year = 2025
 let day = 4
 
+open Base
 open Import
 open Grid
 
@@ -28,15 +29,15 @@ let neighbours (x, y) : coord list =
   ]
 
 let accessible (coord : coord) ~map:(map : map) : bool =
-  let adjacents = neighbours coord |> List.filter (flip GridMap.mem map) in
+  let adjacents = neighbours coord |> List.filter ~f:(flip GridMap.mem map) in
   List.length adjacents < 4
 
 module Solution(Part : sig
   val solve : map -> int
 end) : sig
-  val run : string -> (string, string) result
+  val run : string -> (string, string) Result.t
 end = struct
-  let run = parse >> Part.solve >> string_of_int >> Result.ok
+  let run = parse >> Part.solve >> Int.to_string >> Result.return
 end
 
 module Part_1 = Solution(struct
@@ -53,7 +54,7 @@ module Part_2 = Solution(struct
   let solve (map : map) : int =
     let rec reduce (map : map) : map =
       let reduced = remove_accessible map in
-      if reduced = map then map else reduce reduced
+      if GridMap.equal Poly.(=) reduced map then map else reduce reduced
     in
     GridMap.cardinal map - GridMap.cardinal (reduce map)
 end)
