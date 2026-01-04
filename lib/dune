@@ -8,7 +8,7 @@
  (name import)
  (wrapped false)
  (modules import let fn parsers grid)
- (libraries fmt eio_main angstrom))
+ (libraries base fmt eio_main angstrom))
 
 (library
  (name problem)
