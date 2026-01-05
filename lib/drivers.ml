@@ -1,3 +1,5 @@
+open Core
+
 module Cli = struct
   open Cmdliner
 
@@ -43,16 +45,17 @@ module Cli = struct
       ~token:(auth_token : string option) : unit Cmdliner.Term.ret =
       let output : (string, string) result =
         let open Let in
-        let@ (year, day) = match year, day with
-          | Some year, Some day -> Ok (year, day)
-          | _, _ ->
-            let time = Unix.localtime @@ Unix.time () in
-            let year = Option.value year ~default:(time.tm_year + 1900) in
-            match day with
-            | Some day -> Ok (year, day)
-            | None ->
-              if time.tm_mon != 11 then Error "Must specify --day if current date is not December"
-              else Ok (year, time.tm_mday)
+        let date = lazy(Date.today ~zone:(Lazy.force Time_float_unix.Zone.local)) in
+        let year = match year with
+          | Some year -> year
+          | None -> Date.year @@ Lazy.force date
+        in
+        let@ day = match day with
+          | Some day -> Ok day
+          | None ->
+            let date = Lazy.force date in
+            if Month.(Date.month date <> Dec) then Error "Must specify --day if current date is not December"
+            else Ok (Date.day date)
         in
         let@ run_mode : Problem_runner.Run_mode.t =
           match (auth_token, submit, example) with
@@ -63,25 +66,23 @@ module Cli = struct
           | _, _, true ->
             let input =
               (* It's a tty when no input is piped *)
-              if Unix.isatty Unix.stdin then None
+              if Core_unix.isatty Core_unix.stdin then None
               else Some (In_channel.input_all In_channel.stdin)
             in
-            Result.ok @@ Problem_runner.Run_mode.Example { input }
+            Result.return @@ Problem_runner.Run_mode.Example { input }
           | token, false, _ ->
-            Result.ok @@ Problem_runner.Run_mode.Test_from_puzzle_input {
-              credentials = Option.map Problem_runner.Credentials.of_auth_token token;
+            Result.return @@ Problem_runner.Run_mode.Test_from_puzzle_input {
+              credentials = Option.map token ~f:Problem_runner.Credentials.of_auth_token;
             }
           | Some token, true, _ ->
-            Result.ok @@ Problem_runner.Run_mode.Submit {
+            Result.return @@ Problem_runner.Run_mode.Submit {
               credentials = Problem_runner.Credentials.of_auth_token token;
             }
         in
         Problem_runner.(run { year; day; part; run_mode })
       in
       match output with
-      | Ok output ->
-          print_endline output;
-          `Ok ()
+      | Ok output -> print_endline output; `Ok ()
       | Error error_msg ->`Error (false, error_msg)
 
 let main () =
