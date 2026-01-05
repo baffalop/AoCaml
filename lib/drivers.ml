@@ -41,19 +41,19 @@ module Cli = struct
   end
 
   let run ~(year : int option) ~(day : int option) ~(part : int)
-      ~example:(example : bool) ~submit:(submit : bool)
-      ~token:(auth_token : string option) : unit Cmdliner.Term.ret =
+      ~(example : bool) ~(submit : bool)
+      ~(auth_token : string option) : unit Cmdliner.Term.ret =
       let output : (string, string) result =
         let open Let in
-        let date = lazy(Date.today ~zone:(Lazy.force Time_float_unix.Zone.local)) in
+        let date = lazy(Date.today ~zone:(force Time_float_unix.Zone.local)) in
         let year = match year with
           | Some year -> year
-          | None -> Date.year @@ Lazy.force date
+          | None -> Date.year @@ force date
         in
         let@ day = match day with
           | Some day -> Ok day
           | None ->
-            let date = Lazy.force date in
+            let date = force date in
             if Month.(Date.month date <> Dec) then Error "Must specify --day if current date is not December"
             else Ok (Date.day date)
         in
