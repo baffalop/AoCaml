@@ -91,7 +91,7 @@ let main () =
     let open Terms in
     let+ year and+ day and+ part
     and+ example and+ submit and+ auth_token in
-    run ~year ~day ~part ~example ~submit ~token:auth_token
+    run ~year ~day ~part ~example ~submit ~auth_token
   in
   let cmd = Cmd.make (Cmd.info "aoc") @@ Cmdliner.Term.ret cmd_term in
   exit @@ Cmdliner.Cmd.eval cmd

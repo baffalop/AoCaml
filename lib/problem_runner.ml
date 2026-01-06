@@ -113,7 +113,7 @@ module Options = struct
 end
 
 let run_problem (module Problem : Problem.T) (run_mode : Run_mode.t)
-    (year : int) (day : int) (part : int) : (string, string) result =
+    ~(year : int) ~(day : int) ~(part : int) : (string, string) result =
   let@ input = Run_mode.get_input year day run_mode in
   let@ result =
     match part with
@@ -127,8 +127,7 @@ let run_problem (module Problem : Problem.T) (run_mode : Run_mode.t)
   in
   Result.return result
 
-let find_problem (year : int) (day : int) :
-    ((module Problem.T), string) result =
+let find_problem (year : int) (day : int) : ((module Problem.T), string) result =
   match
     List.find
       ~f:(fun (module Problem : Problem.T) ->
@@ -141,6 +140,6 @@ let find_problem (year : int) (day : int) :
         (Printf.sprintf "Problem (year = %d, day = %d) not implemented."
            year day)
 
-let run (options : Options.t) : (string, string) result =
-  let@ problem = find_problem options.year options.day in
-  run_problem problem options.run_mode options.year options.day options.part
+let run ({ year; day; part; run_mode } : Options.t) : (string, string) result =
+  let@ problem = find_problem year day in
+  run_problem problem run_mode ~year ~day ~part
