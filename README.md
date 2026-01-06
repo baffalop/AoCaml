@@ -1,6 +1,6 @@
 # Tanenbaum
 
-![Tanenbaum logo](https://github.com/Sixstring982/tanenbaum/blob/main/public/logo.webp?raw=true "Tanenbaum logo")
+<img src="https://github.com/Sixstring982/tanenbaum/blob/main/public/logo.webp?raw=true" alt="Tanenbaum logo" width=500>
 
 _Tanenbaum_ is an OCaml starter project for Advent of Code.
 
